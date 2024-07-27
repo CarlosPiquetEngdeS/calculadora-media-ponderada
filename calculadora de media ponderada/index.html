@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Média Ponderada</title>
+    <style>
+        body, .form-container, .obs-container textarea, .subject input[type="text"] {
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: url('Imagem-do-WhatsApp-de-2024-07-23-à_s_-18.49.49_78ffd85f.png') repeat center;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            min-height: 70vh;
+        }
+        .form-container {
+            max-width: 420px;
+            margin: 0 auto;
+            background-color: #78beda;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0px 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .form-container input[type="number"],
+        .form-container input[type="text"] {
+            width: 85%;
+            padding: 12px;
+            border: 3px solid #181616;
+            border-radius: 15px;
+            font-size: 16px;
+            -moz-appearance: textfield;
+        }
+        .form-container input[type="number"]::-webkit-outer-spin-button,
+        .form-container input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .form-container .subject {
+            margin-bottom: 20px;
+        }
+        .form-container .subject label {
+            font-weight: bold;
+            padding: 12px;
+        }
+        .form-container .subject input[type="number"],
+        .form-container .subject input[type="text"] {
+            width: 85%;
+            display: inline-block;
+            margin-right: 2%;
+        }
+        .form-container button {
+            display: block;
+            width: 85%;
+            padding: 15px;
+            background-color: #2649bb;
+            color: #ffffff;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            border: 2px solid white;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+        }
+        #tccFields,
+        #obsField {
+            display: none;
+        }
+        .rodape-flutuante {
+            font-size: 15px;
+            color: #000000;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: flutuar 3s ease-in-out infinite;
+            margin-top: auto;
+        }
+        .calculator-type {
+            margin-bottom: 20px;
+        }
+        .obs-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .obs-container label {
+            font-weight: bold;
+        }
+        .obs-container textarea {
+            width: 85%;
+            padding: 12px;
+            border: 3px solid #181616;
+            border-radius: 15px;
+            font-size: 16px;
+            min-height: 100px;
+            word-wrap: break-word;
+        }
+        .obs-container button {
+            display: inline-block;
+            width: auto;
+            padding: 10px 15px;
+            background-color: #2649bb;
+            color: #ffffff;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 2px solid white;
+            margin-left: 10px;
+            text-transform: uppercase;
+        }
+        .image-container {
+            position: relative;
+            margin-top: 20px;
+        }
+        .image-container input[type="file"] {
+            display: none;
+        }
+        .image-container label {
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            background-color: #bbb826;
+            color: #131313;
+            border: none;
+            border-radius: 15px;
+            font-size: 14px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .image-container label:hover {
+            background-color: #45a049;
+        }
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            display: block;
+            margin-top: 10px;
+        }
+        h1 {
+            font-size: 20px; /* Reduz o tamanho do título */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        let savedObservations = "";
+
+        function createSubjectFields(numSubjects) {
+            const subjectsContainer = document.getElementById('subjectsContainer');
+            subjectsContainer.innerHTML = "";
+
+            for (let i = 1; i <= numSubjects; i++) {
+                const subjectDiv = document.createElement('div');
+                subjectDiv.className = 'subject';
+
+                const subjectNameInput = document.createElement('input');
+                subjectNameInput.type = 'text';
+                subjectNameInput.placeholder = `Nome da Matéria ${i}`;
+                subjectNameInput.id = `subjectName${i}`;
+                subjectDiv.appendChild(subjectNameInput);
+
+                const gradeInput = document.createElement('input');
+                gradeInput.type = 'number';
+                gradeInput.step = '0.1';
+                gradeInput.placeholder = 'Nota';
+                gradeInput.id = `grade${i}`;
+                subjectDiv.appendChild(gradeInput);
+
+                const weightInput = document.createElement('input');
+                weightInput.type = 'number';
+                weightInput.step = '0.1';
+                weightInput.placeholder = 'Peso';
+                weightInput.id = `weight${i}`;
+                subjectDiv.appendChild(weightInput);
+
+                subjectsContainer.appendChild(subjectDiv);
+            }
+
+            const addTccContainer = document.getElementById('addTccContainer');
+            addTccContainer.innerHTML = "";
+
+            const tccCheckbox = document.createElement('input');
+            tccCheckbox.type = 'checkbox';
+            tccCheckbox.id = 'tccCheckbox';
+            tccCheckbox.onchange = function () {
+                const tccFields = document.getElementById('tccFields');
+                tccFields.style.display = this.checked ? 'block' : 'none';
+            };
+
+            const tccLabel = document.createElement('label');
+            tccLabel.textContent = 'Adicionar TCC opcional';
+            tccLabel.htmlFor = 'tccCheckbox';
+
+            addTccContainer.appendChild(tccCheckbox);
+            addTccContainer.appendChild(tccLabel);
+
+            const obsCheckbox = document.createElement('input');
+            obsCheckbox.type = 'checkbox';
+            obsCheckbox.id = 'obsCheckbox';
+            obsCheckbox.onchange = function () {
+                const obsField = document.getElementById('obsField');
+                obsField.style.display = this.checked ? 'block' : 'none';
+            };
+
+            const obsLabel = document.createElement('label');
+            obsLabel.textContent = 'Adicionar Observações';
+            obsLabel.htmlFor = 'obsCheckbox';
+
+            addTccContainer.appendChild(obsCheckbox);
+            addTccContainer.appendChild(obsLabel);
+        }
+
+        function updateSubjectFields() {
+            const numSubjects = parseInt(document.getElementById('numSubjects').value, 10);
+            if (numSubjects >= 1 && numSubjects <= 25) {
+                createSubjectFields(numSubjects);
+            }
+        }
+
+        function calculateAverage() {
+            const numSubjects = parseInt(document.getElementById('numSubjects').value, 10);
+            let totalGrade = 0;
+            let totalWeight = 0;
+
+            for (let i = 1; i <= numSubjects; i++) {
+                const gradeInput = document.getElementById(`grade${i}`);
+                const weightInput = document.getElementById(`weight${i}`);
+
+                const grade = parseFloat(gradeInput.value);
+                const weight = parseFloat(weightInput.value);
+
+                if (!isNaN(grade) && !isNaN(weight) && weight > 0) {
+                    totalGrade += grade * weight;
+                    totalWeight += weight;
+                }
+            }
+
+            const tccCheckbox = document.getElementById('tccCheckbox');
+            if (tccCheckbox && tccCheckbox.checked) {
+                const tccGradeInput = document.getElementById('tccGrade');
+                const tccWeightInput = document.getElementById('tccWeight');
+
+                const tccGrade = parseFloat(tccGradeInput.value);
+                const tccWeight = parseFloat(tccWeightInput.value);
+
+                if (!isNaN(tccGrade) && !isNaN(tccWeight) && tccWeight > 0) {
+                    totalGrade += tccGrade * tccWeight;
+                    totalWeight += tccWeight;
+                }
+            }
+
+            const average = totalWeight > 0 ? totalGrade / totalWeight : 0;
+            const averageElement = document.getElementById('average');
+            averageElement.textContent = `Resultado Média Ponderada: ${average.toFixed(2)}`;
+
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+        }
+
+        function saveObservations() {
+            const observationsField = document.getElementById('obs');
+            if (observationsField.value.length > 230) {
+                alert('As observações não podem exceder 230 caracteres.');
+                return;
+            }
+            savedObservations = observationsField.value;
+            document.getElementById('savedObs').textContent = savedObservations;
+            document.getElementById('removeObsButton').style.display = 'inline-block';
+            alert('Observações salvas com sucesso!');
+        }
+
+        function removeObservations() {
+            savedObservations = "";
+            document.getElementById('savedObs').textContent = "";
+            document.getElementById('obs').value = "";
+            document.getElementById('removeObsButton').style.display = 'none';
+        }
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                unit: 'cm',
+                format: 'a4',
+                orientation: 'portrait'
+            });
+
+            // Configuração das margens
+            doc.setFontSize(10);
+            doc.setLineHeightFactor(1.3); // Espaçamento entre linhas
+            doc.setFont('times', 'normal'); // Define a fonte como Times New Roman
+
+            const margins = {
+                top: 1,
+                bottom: 2,
+                left: 2,
+                right: 1
+            };
+
+            const innerMargins = 0.5; // Margem interna para o conteúdo
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            const contentWidth = pageWidth - margins.left - margins.right;
+            const contentHeight = pageHeight - margins.top - margins.bottom;
+
+            let cursorY = margins.top + innerMargins;
+
+            const studentName = document.getElementById('studentName').value;
+            const studentClass = document.getElementById('studentClass').value;
+            const numSubjects = parseInt(document.getElementById('numSubjects').value, 10);
+            let notes = "";
+
+            for (let i = 1; i <= numSubjects; i++) {
+                const subjectNameInput = document.getElementById(`subjectName${i}`);
+                const gradeInput = document.getElementById(`grade${i}`);
+                const weightInput = document.getElementById(`weight${i}`);
+                const subjectName = subjectNameInput.value || `Matéria ${i}`;
+                const grade = gradeInput.value;
+                const weight = weightInput.value;
+                notes += `${subjectName}: Nota = ${grade}, Peso = ${weight}\n`;
+            }
+
+            const average = document.getElementById('average').textContent;
+
+            doc.setFontSize(20);
+            doc.text('Relatório de Médias', margins.left + innerMargins, cursorY);
+            doc.setFontSize(14);
+            cursorY += 1.2;
+            doc.text(`Nome do Aluno:`, margins.left + innerMargins, cursorY);
+            cursorY += 0.5;
+            doc.text(`${studentName}`, margins.left + innerMargins, cursorY);
+            cursorY += 1.2;
+            doc.text(`Turma: ${studentClass}`, margins.left + innerMargins, cursorY);
+            cursorY += 1.2;
+            doc.text(average, margins.left + innerMargins, cursorY);
+            cursorY += 1.2;
+            doc.text(`Notas:`, margins.left + innerMargins, cursorY);
+            cursorY += 1.2;
+            const splitNotes = notes.split("\n");
+            splitNotes.forEach(note => {
+                doc.text(note, margins.left + innerMargins, cursorY);
+                cursorY += 0.7;
+            });
+
+            if (savedObservations) {
+                const splitObservations = doc.splitTextToSize(`Observações: ${savedObservations}`, contentWidth - 2 * innerMargins);
+                cursorY += 0.5;
+                splitObservations.forEach(line => {
+                    doc.text(line, margins.left + innerMargins, cursorY);
+                    cursorY += 0.5;
+                });
+            }
+
+            const img = document.getElementById('imagePreview');
+            if (img && img.src) {
+                const imgData = img.src;
+                doc.addImage(imgData, 'JPEG', pageWidth - margins.right - 4.2, margins.top, 4, 3);  // Ajustando a posição da imagem para parte superior direita
+            }
+
+            const watermarkImg = document.getElementById('watermarkPreview');
+            if (watermarkImg && watermarkImg.src) {
+                const watermarkImgData = watermarkImg.src;
+                const watermarkWidth = contentWidth * 0.5; // Ajuste a largura da marca d'água (50% da largura do conteúdo)
+                const watermarkHeight = watermarkWidth; // Mantém a proporção 1:1
+                const watermarkX = (pageWidth - watermarkWidth) / 2; // Centraliza horizontalmente
+                const watermarkY = (pageHeight - watermarkHeight) / 2; // Centraliza verticalmente
+
+                // Define a transparência da marca d'água
+                doc.setGState(new doc.GState({ opacity: 0.1 }));
+                doc.addImage(watermarkImgData, 'JPEG', watermarkX, watermarkY, watermarkWidth, watermarkHeight);
+                doc.setGState(new doc.GState({ opacity: 1 })); // Restaura a opacidade padrão
+            }
+
+            // Desenhar a borda preta ao redor do conteúdo com margem
+            doc.setDrawColor(0); // Define a cor de desenho como preto
+            doc.setLineWidth(0.1); // Define a largura da linha
+            doc.rect(margins.left - 0.2, margins.top - 0.2, contentWidth + 0.4, cursorY - margins.top + innerMargins + 0.4); // Desenha o retângulo
+
+            // Save the PDF
+            doc.save('relatorio.pdf');
+        }
+
+        function handleImageUpload(event, previewId) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const imgElement = document.getElementById(previewId);
+                imgElement.src = e.target.result;
+                imgElement.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Calculadora de Média Ponderada</h1>
+        <label for="studentName">Nome do Aluno:</label>
+        <input type="text" id="studentName" required>
+        <label for="studentClass">Turma:</label>
+        <input type="text" id="studentClass" required>
+
+        <label for="numSubjects">Número de Matérias:</label>
+        <input type="number" id="numSubjects" min="1" max="25" onchange="updateSubjectFields()" required>
+
+        <div id="subjectsContainer"></div>
+        <div id="addTccContainer"></div>
+
+        <div id="tccFields">
+            <label for="tccGrade">Nota do TCC:</label>
+            <input type="number" id="tccGrade" step="0.1">
+            <label for="tccWeight">Peso do TCC:</label>
+            <input type="number" id="tccWeight" step="0.1">
+        </div>
+
+        <button type="button" onclick="calculateAverage()">Calcular Média</button>
+
+        <div id="result">
+            <span id="average"></span>
+        </div>
+        
+        <div id="obsField" class="obs-container">
+            <label for="obs">Observações:</label>
+            <textarea id="obs" maxlength="230"></textarea>
+            <button type="button" onclick="saveObservations()">Salvar</button>
+            <button type="button" id="removeObsButton" onclick="removeObservations()" style="display:none;">Remover</button>
+        </div>
+
+        <div id="savedObs" style="font-weight: bold; margin-top: 10px;"></div>
+
+        <div class="image-container">
+            <label for="imageUpload">Carregar Imagem</label>
+            <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event, 'imagePreview')">
+            <img id="imagePreview" class="image-preview" style="display: none;">
+        </div>
+
+        <div class="image-container">
+            <label for="watermarkUpload">Carregar Marca d'Água</label>
+            <input type="file" id="watermarkUpload" accept="image/*" onchange="handleImageUpload(event, 'watermarkPreview')">
+            <img id="watermarkPreview" class="image-preview" style="display: none;">
+        </div>
+        <button type="button" onclick="generatePDF()">Gerar PDF</button>
+    </div>
+    <div class="rodape-flutuante">
+        Calculadora de Média Ponderada - Desenvolvida por Carlos Antonio Oliveira Piquet.
+    </div>
+</body>
+</html>
